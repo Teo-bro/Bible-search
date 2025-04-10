@@ -360,17 +360,20 @@
         // 성경 데이터 로드 함수
         async function loadBibleData() {
             try {
-                const response = await fetch('kjv.txt');
+                // 저장소 이름을 포함한 경로로 수정
+                const response = await fetch('/저장소이름/한글킹제임스성경 전문.txt');
+                // 또는 전체 경로 사용
+                // const response = await fetch('https://raw.githubusercontent.com/사용자명/저장소이름/브랜치명/한글킹제임스성경 전문.txt');
                 if (!response.ok) {
                     throw new Error('성경 데이터를 불러오는데 실패했습니다.');
                 }
-
+        
                 const text = await response.text();
                 parseBibleData(text);
                 console.log('성경 데이터가 성공적으로 로드되었습니다.');
             } catch (error) {
                 console.error('성경 데이터 로드 오류:', error);
-                document.getElementById('output').innerHTML = '<p class="error">성경 데이터를 불러오는데 실패했습니다. 페이지를 새로고침 하거나 관리자에게 문의하세요.</p>';
+                document.getElementById('output').innerHTML = '<p class="error">성경 데이터를 불러오는데 실패했습니다.</p>';
             }
         }
 
