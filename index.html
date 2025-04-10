@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한글킹제임스성경 검색기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: '맑은 고딕', sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 50%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .search-button, .copy-button {
+            margin-left: 10px;
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .search-button:hover, .copy-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .bible-buttons {
+            width: 200px;
+            padding-right: 20px;
+            overflow-y: auto;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .book-button {
+            width: calc(33.33% - 4px);
+            margin: 2px;
+            padding: 6px 0;
+            text-align: center;
+            font-size: 14px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .book-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .book-button.active {
+            background-color: #c0c0c0;
+        }
+        
+        .chapter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .chapter-button {
+            width: calc(20% - 4px);
+            margin: 2px;
+            padding: 5px 0;
+            text-align: center;
+            font-size: 12px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .chapter-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .chapter-button.active {
+            background-color: #c0c0c0;
+        }
+        
+        .output-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        
+        .bible-reference {
+            color: blue;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .highlight {
+            background-color: yellow;
+        }
+        
+        .verse-highlight {
+            background-color: yellow;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .nav-button {
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .nav-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .divider {
+            height: 15px;
+        }
+        
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>한글킹제임스성경 검색기</h1>
+    </div>
+    
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="검색어 또는 성경 구절을 입력하세요">
+        <button class="search-button">검색</button>
+        <button class="copy-button">복사</button>
+    </div>
+    
+    <div class="main-container">
+        <div class="bible-buttons">
+            <!-- 구약 버튼 -->
+            <div class="button-group">
+                <button class="book-button" data-book="창세기" data-abbr="창">창</button>
+                <button class="book-button" data-book="출애굽기" data-abbr="출">출</button>
+                <button class="book-button" data-book="레위기" data-abbr="레">레</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="민수기" data-abbr="민">민</button>
+                <button class="book-button" data-book="신명기" data-abbr="신">신</button>
+                <button class="book-button" data-book="여호수아" data-abbr="수">수</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="재판관기" data-abbr="판">판</button>
+                <button class="book-button" data-book="룻기" data-abbr="룻">룻</button>
+                <button class="book-button" data-book="사무엘상" data-abbr="삼상">삼상</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="사무엘하" data-abbr="삼하">삼하</button>
+                <button class="book-button" data-book="열왕기상" data-abbr="왕상">왕상</button>
+                <button class="book-button" data-book="열왕기하" data-abbr="왕하">왕하</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="역대기상" data-abbr="대상">대상</button>
+                <button class="book-button" data-book="역대기하" data-abbr="대하">대하</button>
+                <button class="book-button" data-book="에스라" data-abbr="스">스</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="느헤미야" data-abbr="느">느</button>
+                <button class="book-button" data-book="에스더" data-abbr="에">에</button>
+                <button class="book-button" data-book="욥기" data-abbr="욥">욥</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="시편" data-abbr="시">시</button>
+                <button class="book-button" data-book="잠언" data-abbr="잠">잠</button>
+                <button class="book-button" data-book="전도서" data-abbr="전">전</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="솔로몬의 노래" data-abbr="솔">솔</button>
+                <button class="book-button" data-book="이사야" data-abbr="사">사</button>
+                <button class="book-button" data-book="예레미야" data-abbr="렘">렘</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="예레미야애가" data-abbr="애">애</button>
+                <button class="book-button" data-book="에스겔" data-abbr="겔">겔</button>
+                <button class="book-button" data-book="다니엘" data-abbr="단">단</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="호세아" data-abbr="호">호</button>
+                <button class="book-button" data-book="요엘" data-abbr="욜">욜</button>
+                <button class="book-button" data-book="아모스" data-abbr="암">암</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="오바댜" data-abbr="옵">옵</button>
+                <button class="book-button" data-book="요나" data-abbr="욘">욘</button>
+                <button class="book-button" data-book="미카" data-abbr="미">미</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="나훔" data-abbr="나">나</button>
+                <button class="book-button" data-book="하박국" data-abbr="합">합</button>
+                <button class="book-button" data-book="스파냐" data-abbr="슾">슾</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="학개" data-abbr="학">학</button>
+                <button class="book-button" data-book="스카랴" data-abbr="슼">슼</button>
+                <button class="book-button" data-book="말라키" data-abbr="말">말</button>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- 신약 버튼 -->
+            <div class="button-group">
+                <button class="book-button" data-book="마태복음" data-abbr="마">마</button>
+                <button class="book-button" data-book="마가복음" data-abbr="막">막</button>
+                <button class="book-button" data-book="누가복음" data-abbr="눅">눅</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="요한복음" data-abbr="요">요</button>
+                <button class="book-button" data-book="사도행전" data-abbr="행">행</button>
+                <button class="book-button" data-book="로마서" data-abbr="롬">롬</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="고린도전서" data-abbr="고전">고전</button>
+                <button class="book-button" data-book="고린도후서" data-abbr="고후">고후</button>
+                <button class="book-button" data-book="갈라디아서" data-abbr="갈">갈</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="에베소서" data-abbr="엡">엡</button>
+                <button class="book-button" data-book="빌립보서" data-abbr="빌">빌</button>
+                <button class="book-button" data-book="골로새서" data-abbr="골">골</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="데살로니가전서" data-abbr="살전">살전</button>
+                <button class="book-button" data-book="데살로니가후서" data-abbr="살후">살후</button>
+                <button class="book-button" data-book="디모데전서" data-abbr="딤전">딤전</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="디모데후서" data-abbr="딤후">딤후</button>
+                <button class="book-button" data-book="디도서" data-abbr="딛">딛</button>
+                <button class="book-button" data-book="빌레몬서" data-abbr="몬">몬</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="히브리서" data-abbr="히">히</button>
+                <button class="book-button" data-book="야고보서" data-abbr="약">약</button>
+                <button class="book-button" data-book="베드로전서" data-abbr="벧전">벧전</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="베드로후서" data-abbr="벧후">벧후</button>
+                <button class="book-button" data-book="요한일서" data-abbr="요일">요일</button>
+                <button class="book-button" data-book="요한이서" data-abbr="요이">요이</button>
+            </div>
+            <div class="button-group">
+                <button class="book-button" data-book="요한삼서" data-abbr="요삼">요삼</button>
+                <button class="book-button" data-book="유다서" data-abbr="유">유</button>
+                <button class="book-button" data-book="요한계시록" data-abbr="계">계</button>
+            </div>
+        </div>
+        
+        <div class="output-container" id="output">
+            <p>검색창에 단어를 입력하고 검색 버튼을 누르면 그 단어가 포함된 모든 구절을 출력합니다.</p>
+            <p>또는 성경 구절을 입력하세요. (예: '창세기 1:1', '창 1:1', '창세기1:1', '창 1:1-3', '창 1:3,5', '창1.1')</p>
+            <p>또는 왼쪽의 성경 버튼을 클릭하여 성경을 읽을 수 있습니다.</p>
+        </div>
+    </div>
+
+    <script>
+        // 성경 데이터를 저장할 객체
+        const bibleData = {};
+        let currentBook = '';
+        let currentChapter = 0;
+        let searchHistory = [];
+        let historyIndex = -1;
+
+        // 성경 책 정보
+        const bibleBooks = {
+            "창세기": "창", "출애굽기": "출", "레위기": "레", "민수기": "민", "신명기": "신", 
+            "여호수아": "수", "재판관기": "판", "룻기": "룻", "사무엘상": "삼상", "사무엘하": "삼하", 
+            "열왕기상": "왕상", "열왕기하": "왕하", "역대기상": "대상", "역대기하": "대하", 
+            "에스라": "스", "느헤미야": "느", "에스더": "에", "욥기": "욥", "시편": "시", 
+            "잠언": "잠", "전도서": "전", "솔로몬의 노래": "솔", "이사야": "사", "예레미야": "렘", 
+            "예레미야애가": "애", "에스겔": "겔", "다니엘": "단", "호세아": "호", "요엘": "욜", 
+            "아모스": "암", "오바댜": "옵", "요나": "욘", "미카": "미", "나훔": "나", 
+            "하박국": "합", "스파냐": "슾", "학개": "학", "스카랴": "슼", "말라키": "말", 
+            "마태복음": "마", "마가복음": "막", "누가복음": "눅", "요한복음": "요", "사도행전": "행", 
+            "로마서": "롬", "고린도전서": "고전", "고린도후서": "고후", "갈라디아서": "갈", 
+            "에베소서": "엡", "빌립보서": "빌", "골로새서": "골", "데살로니가전서": "살전", 
+            "데살로니가후서": "살후", "디모데전서": "딤전", "디모데후서": "딤후", "디도서": "딛", 
+            "빌레몬서": "몬", "히브리서": "히", "야고보서": "약", "베드로전서": "벧전", 
+            "베드로후서": "벧후", "요한일서": "요일", "요한이서": "요이", "요한삼서": "요삼", 
+            "유다서": "유", "요한계시록": "계"
+        };
+
+        // 약어를 책 이름으로 변환하는 역 맵핑
+        const abbrToBook = {};
+        for (const [book, abbr] of Object.entries(bibleBooks)) {
+            abbrToBook[abbr] = book;
+        }
+
+        // 성경 책의 장 수 정보
+        const bookChapters = {
+            "창세기": 50, "출애굽기": 40, "레위기": 27, "민수기": 36, "신명기": 34, 
+            "여호수아": 24, "재판관기": 21, "룻기": 4, "사무엘상": 31, "사무엘하": 24, 
+            "열왕기상": 22, "열왕기하": 25, "역대기상": 29, "역대기하": 36, 
+            "에스라": 10, "느헤미야": 13, "에스더": 10, "욥기": 42, "시편": 150, 
+            "잠언": 31, "전도서": 12, "솔로몬의 노래": 8, "이사야": 66, "예레미야": 52, 
+            "예레미야애가": 5, "에스겔": 48, "다니엘": 12, "호세아": 14, "요엘": 3, 
+            "아모스": 9, "오바댜": 1, "요나": 4, "미카": 7, "나훔": 3, 
+            "하박국": 3, "스파냐": 3, "학개": 2, "스카랴": 14, "말라키": 4, 
+            "마태복음": 28, "마가복음": 16, "누가복음": 24, "요한복음": 21, "사도행전": 28, 
+            "로마서": 16, "고린도전서": 16, "고린도후서": 13, "갈라디아서": 6, 
+            "에베소서": 6, "빌립보서": 4, "골로새서": 4, "데살로니가전서": 5, 
+            "데살로니가후서": 3, "디모데전서": 6, "디모데후서": 4, "디도서": 3, 
+            "빌레몬서": 1, "히브리서": 13, "야고보서": 5, "베드로전서": 5, 
+            "베드로후서": 3, "요한일서": 5, "요한이서": 1, "요한삼서": 1, 
+            "유다서": 1, "요한계시록": 22
+        };
+
+        // 성경 데이터 로드 함수
+        async function loadBibleData() {
+            try {
+                const response = await fetch('한글킹제임스성경 전문.txt');
+                if (!response.ok) {
+                    throw new Error('성경 데이터를 불러오는데 실패했습니다.');
+                }
+
+                const text = await response.text();
+                parseBibleData(text);
+                console.log('성경 데이터가 성공적으로 로드되었습니다.');
+            } catch (error) {
+                console.error('성경 데이터 로드 오류:', error);
+                document.getElementById('output').innerHTML = '<p class="error">성경 데이터를 불러오는데 실패했습니다. 페이지를 새로고침 하거나 관리자에게 문의하세요.</p>';
+            }
+        }
+
+        // 성경 데이터 파싱 함수
+        function parseBibleData(text) {
+            const lines = text.split('\n');
+            let currentBook = '';
+            let currentChapter = 0;
+            
+            for (const line of lines) {
+                // 비어있는 줄 무시
+                if (!line.trim()) continue;
+                
+                // 정규 표현식으로 성경 구절 패턴 검색
+                const versePattern = /^(.+) (\d+):(\d+) (.+)$/;
+                const match = line.match(versePattern);
+                
+                if (match) {
+                    const [, book, chapter, verse, text] = match;
+                    
+                    // 기존 책이 없으면 초기화
+                    if (!bibleData[book]) {
+                        bibleData[book] = {};
+                    }
+                    
+                    // 기존 장이 없으면 초기화
+                    if (!bibleData[book][chapter]) {
+                        bibleData[book][chapter] = {};
+                    }
+                    
+                    // 구절 저장
+                    bibleData[book][chapter][verse] = text;
+                    
+                    currentBook = book;
+                    currentChapter = parseInt(chapter);
+                }
+            }
+        }
+
+        // 임시 데모용 더미 데이터 생성 (실제 구현에서는 제거)
+        function generateDummyData() {
+            for (const book in bookChapters) {
+                bibleData[book] = {};
+                for (let chapter = 1; chapter <= bookChapters[book]; chapter++) {
+                    bibleData[book][chapter] = {};
+                    const verseCount = Math.floor(Math.random() * 30) + 5; // 5 ~ 34 구절
+                    for (let verse = 1; verse <= verseCount; verse++) {
+                        bibleData[book][chapter][verse] = `이것은 ${book} ${chapter}장 ${verse}절의 예시 본문입니다.`;
+                    }
+                }
+            }
+            console.log('더미 데이터가 생성되었습니다.');
+        }
+
+        // 초기화 함수
+        function init() {
+            // 성경 데이터 로드
+            loadBibleData();
+            // 임시 더미 데이터 생성 (실제 구현에서는 제거)
+            // generateDummyData();
+            
+            // 이벤트 리스너 설정
+            setupEventListeners();
+        }
+
+        // 이벤트 리스너 설정
+        function setupEventListeners() {
+            // 성경 책 버튼 클릭 이벤트
+            document.querySelectorAll('.book-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const book = this.dataset.book;
+                    clearChapterButtons();
+                    displayChapterButtons(book);
+                    currentBook = book;
+                    currentChapter = 1;
+                    displayChapter(book, 1);
+                    saveHistory();
+                });
+            });
+            
+            // 검색 버튼 클릭 이벤트
+            document.querySelector('.search-button').addEventListener('click', function() {
+                performSearch();
+            });
+            
+            // 검색창 엔터 키 이벤트
+            document.querySelector('.search-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // 복사 버튼 클릭 이벤트
+            document.querySelector('.copy-button').addEventListener('click', function() {
+                copyOutputText();
+            });
+            
+            // 키보드 이벤트 (화살표 키로 장 이동, Ctrl+Z로 히스토리 이동)
+            document.addEventListener('keydown', function(e) {
+                if (currentBook && currentChapter) {
+                    if (e.key === 'ArrowLeft') {
+                        navigateChapter(-1);
+                    } else if (e.key === 'ArrowRight') {
+                        navigateChapter(1);
+                    }
+                }
+                
+                // Ctrl+Z로 히스토리 이동
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    goBack();
+                }
+            });
+        }
+
+        // 장 버튼 표시 함수
+        function displayChapterButtons(book) {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'chapter-buttons';
+            buttonContainer.dataset.book = book;
+            
+            const chapterCount = bookChapters[book] || 0;
+            
+            for (let i = 1; i <= chapterCount; i++) {
+                const button = document.createElement('button');
+                button.className = 'chapter-button';
+                button.textContent = i;
+                button.dataset.chapter = i;
+                
+                button.addEventListener('click', function() {
+                    currentChapter = parseInt(this.dataset.chapter);
+                    displayChapter(book, currentChapter);
+                    highlightCurrentButtons();
+                    saveHistory();
+                });
+                
+                buttonContainer.appendChild(button);
+            }
+            
+            // 책 버튼 다음에 장 버튼 삽입
+            const bookButton = document.querySelector(`.book-button[data-book="${book}"]`);
+            const buttonGroup = bookButton.closest('.button-group');
+            buttonGroup.parentNode.insertBefore(buttonContainer, buttonGroup.nextSibling);
+            
+            // 현재 책 버튼 하이라이트
+            highlightCurrentButtons();
+        }
+
+        // 장 버튼 제거 함수
+        function clearChapterButtons() {
+            document.querySelectorAll('.chapter-buttons').forEach(el => el.remove());
+            document.querySelectorAll('.book-button.active').forEach(el => el.classList.remove('active'));
+        }
+
+        // 현재 선택된 버튼 하이라이트 함수
+        function highlightCurrentButtons() {
+            // 모든 활성 클래스 제거
+            document.querySelectorAll('.book-button.active, .chapter-button.active').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // 현재 책 버튼 활성화
+            if (currentBook) {
+                const bookButton = document.querySelector(`.book-button[data-book="${currentBook}"]`);
+                if (bookButton) {
+                    bookButton.classList.add('active');
+                }
+            }
+            
+            // 현재 장 버튼 활성화
+            if (currentBook && currentChapter) {
+                const chapterButtons = document.querySelector(`.chapter-buttons[data-book="${currentBook}"]`);
+                if (chapterButtons) {
+                    const chapterButton = chapterButtons.querySelector(`.chapter-button[data-chapter="${currentChapter}"]`);
+                    if (chapterButton) {
+                        chapterButton.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        // 장 내용 표시 함수
+        function displayChapter(book, chapter, highlightVerses = []) {
+            const output = document.getElementById('output');
+            
+            // 성경 데이터가 로드되지 않았으면 메시지 표시
+            if (!bibleData[book] || !bibleData[book][chapter]) {
+                output.innerHTML = '<p class="error">해당 장을 찾을 수 없습니다.</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            // 내비게이션 버튼 추가
+            html += `<div class="navigation-buttons">`;
+            html += `<button class="nav-button prev-button">◀ 이전 장</button>`;
+            html += `<span class="bible-reference">${book} ${chapter}장</span>`;
+            html += `<button class="nav-button next-button">다음 장 ▶</button>`;
+            html += `</div>`;
+            
+            // 장 제목
+            html += `<h3 class="bible-reference">${book} ${chapter}장</h3>`;
+            
+            // 구절
+            const verses = bibleData[book][chapter];
+            for (const verse in verses) {
+                const verseNumber = parseInt(verse);
+                const verseText = verses[verse];
+                const highlightClass = highlightVerses.includes(verseNumber) ? 'verse-highlight' : '';
+                html += `<p><span class="verse-number ${highlightClass}">${verseNumber}</span> ${verseText}</p>`;
+            }
+            
+            output.innerHTML = html;
+            
+            // 내비게이션 버튼 이벤트 추가
+            document.querySelector('.prev-button').addEventListener('click', function() {
+                navigateChapter(-1);
+            });
+            
+            document.querySelector('.next-button').addEventListener('click', function() {
+                navigateChapter(1);
+            });
+            
+            // 스크롤 위치 조정
+            if (highlightVerses.length > 0) {
+                const firstHighlightEl = document.querySelector('.verse-highlight');
+                if (firstHighlightEl) {
+                    firstHighlightEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                output.scrollTop = 0;
+            }
+            
+            // 버튼 하이라이트 업데이트
+            highlightCurrentButtons();
+        }
+
+        // 장 이동 함수
+        function navigateChapter(direction) {
+            if (!currentBook) return;
+            
+            const maxChapter = bookChapters[currentBook];
+            let newChapter = currentChapter + direction;
+            
+            if (newChapter < 1 || newChapter > maxChapter) {
+                // 책 이동
+                const bookList = Object.keys(bookChapters);
+                const currentBookIndex = bookList.indexOf(currentBook);
+                let newBookIndex = currentBookIndex;
+                
+                if (newChapter < 1 && currentBookIndex > 0) {
+                    // 이전 책으로
+                    newBookIndex = currentBookIndex - 1;
+                    const newBook = bookList[newBookIndex];
+                    newChapter = bookChapters[newBook];
+                    clearChapterButtons();
+                    currentBook = newBook;
+                    displayChapterButtons(newBook);
+                } else if (newChapter > maxChapter && currentBookIndex < bookList.length - 1) {
+                    // 다음 책으로
+                    newBookIndex = currentBookIndex + 1;
+                    const newBook = bookList[newBookIndex];
+                    newChapter = 1;
+                    clearChapterButtons();
+                    currentBook = newBook;
+                    displayChapterButtons(newBook);
+                } else {
+                    // 책의 처음이나 끝이면 이동하지 않음
+                    return;
+                }
+            }
+            
+            currentChapter = newChapter;
+            displayChapter(currentBook, currentChapter);
+            saveHistory();
+        }
+
+        // 검색 기능 수행 함수
+        function performSearch() {
+            const searchInput = document.querySelector('.search-input').value.trim();
+            
+            if (!searchInput) {
+                // 전체 성경 표시
+                displayAllBible();
+                return;
+            }
+            
+            // 검색어가 성경 구절 형식인지 확인
+            if (isReferenceSearch(searchInput)) {
+                searchBibleReferences(searchInput);
+            } else {
+                // 단어 검색
+                searchBibleWords(searchInput);
+            }
+            
+            saveHistory();
+        }
+
+        // 성경 구절 검색 형식인지 확인하는 함수
+        function isReferenceSearch(input) {
+            // 성경 구절 형식의 패턴들
+            const patterns = [
+                /^([가-힣]+) *(\d+):(\d+)(?:-(\d+))?(?:,(\d+)(?:-(\d+))?)*$/,  // "창세기 1:1", "창세기 1:1-3", "창세기 1:1,3-5"
+                /^([가-힣]+)(\d+):(\d+)(?:-(\d+))?(?:,(\d+)(?:-(\d+))?)*$/,     // "창세기1:1"
+                /^([가-힣]+) *(\d+)\.(\d+)(?:-(\d+))?(?:,(\d+)(?:-(\d+))?)*$/,  // "창 1.1", "창 1.1-3"
+            ];
+            
+            // 공백으로 구분된 여러 구절 검사
+            const references = input.split(/\s+(?=[가-힣])/);
+            for (const ref of references) {
+                let isValidFormat = patterns.some(pattern => pattern.test(ref));
+                if (!isValidFormat) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        // 성경 구절 검색 함수
+        function searchBibleReferences(input) {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            // 공백으로 구분된 여러 구절 처리
+            const references = input.split(/\s+(?=[가-힣])/);
+            let results = [];
+            let errorMessages = [];
+            
+            for (const ref of references) {
+                const result = parseReferenceAndGetVerses(ref);
+                if (result.error) {
+                    errorMessages.push(result.error);
+                } else if (result.verses) {
+                    results = results.concat(result.verses);
+                }
+            }
+            
+            // 에러 메시지 표시
+            if (errorMessages.length > 0) {
+                output.innerHTML = errorMessages.map(err => `<p class="error">${err}</p>`).join('');
+                return;
+            }
+            
+            // 검색 결과 표시
+            if (results.length === 0) {
+                output.innerHTML = '<p class="error">검색된 구절이 없습니다.</p>';
+                return;
+            }
+            
+            let html = '';
+            for (const result of results) {
+                html += `<p><span class="bible-reference" data-book="${result.book}" data-chapter="${result.chapter}" data-verse="${result.verse}">${result.book} ${result.chapter}:${result.verse}</span> ${result.text}</p>`;
+            }
+            
+            output.innerHTML = html;
+            
+            // 레퍼런스 클릭 이벤트 추가
+            document.querySelectorAll('.bible-reference').forEach(ref => {
+                ref.addEventListener('click', function() {
+                    const book = this.dataset.book;
+                    const chapter = parseInt(this.dataset.chapter);
+                    const verse = parseInt(this.dataset.verse);
+                    
+                    clearChapterButtons();
+                    displayChapterButtons(book);
+                    currentBook = book;
+                    currentChapter = chapter;
+                    displayChapter(book, chapter, [verse]);
+                    saveHistory();
+                });
+            });
+        }
+
+        // 구절 참조 파싱 및 구절 가져오기 함수
+        function parseReferenceAndGetVerses(reference) {
+            // 다양한 형식의 구절 참조 패턴
+            const basicPattern = /^([가-힣]+) *(\d+):(\d+)(?:-(\d+))?(?:,(\d+)(?:-(\d+))?)*$/;
+            const noSpacePattern = /^([가-힣]+)(\d+):(\d+)(?:-(\d+))?(?:,(\d+)(?:-(\d+))?)*$/;
+            const dotPattern = /^([가-힣]+) *(\d+)\.(\d+)(?:-(\d+))?(?:,(\d+)(?:-(\d+))?)*$/;
+            
+            let match;
+            let book, chapter, baseVerse, endVerse;
+            
+            // 기본 패턴 (창세기 1:1, 창 1:1)
+            if (match = reference.match(basicPattern)) {
+                [, book, chapter, baseVerse, endVerse] = match;
+            }
+            // 공백 없는 패턴 (창세기1:1)
+            else if (match = reference.match(noSpacePattern)) {
+                [, book, chapter, baseVerse, endVerse] = match;
+            }
+            // 점을 사용한 패턴 (창 1.1)
+            else if (match = reference.match(dotPattern)) {
+                [, book, chapter, baseVerse, endVerse] = match;
+            }
+            else {
+                return { error: `잘못된 구절 형식: ${reference}` };
+            }
+            
+            chapter = parseInt(chapter);
+            baseVerse = parseInt(baseVerse);
+            
+            // 책 이름 확인 및 정규화
+            const fullBook = getFullBookName(book);
+            if (!fullBook) {
+                return { error: `알 수 없는 성경 책: ${book}` };
+            }
+            
+            // 장과 절 유효성 검사
+            if (!bibleData[fullBook]) {
+                return { error: `${fullBook}을(를) 찾을 수 없습니다.` };
+            }
+            
+            if (!bibleData[fullBook][chapter]) {
+                return { error: `${fullBook} ${chapter}장을 찾을 수 없습니다.` };
+            }
+            
+            // 여러 구절 번호 처리
+            const verses = [];
+            
+            // 기본 구절 범위 처리 (1:1 또는 1:1-3)
+            if (endVerse) {
+                endVerse = parseInt(endVerse);
+                if (baseVerse > endVerse) {
+                    return { error: `잘못된 구절 범위: ${baseVerse}-${endVerse}` };
+                }
+                
+                for (let v = baseVerse; v <= endVerse; v++) {
+                    if (bibleData[fullBook][chapter][v]) {
+                        verses.push({
+                            book: fullBook,
+                            chapter: chapter,
+                            verse: v,
+                            text: bibleData[fullBook][chapter][v]
+                        });
+                    }
+                }
+            } else {
+                if (bibleData[fullBook][chapter][baseVerse]) {
+                    verses.push({
+                        book: fullBook,
+                        chapter: chapter,
+                        verse: baseVerse,
+                        text: bibleData[fullBook][chapter][baseVerse]
+                    });
+                }
+            }
+            
+            // 쉼표로 구분된 추가 구절 처리 (1:1,3,5-7)
+            const commaVerses = reference.match(/,(\d+)(?:-(\d+))?/g);
+            if (commaVerses) {
+                for (const commaVerse of commaVerses) {
+                    const commaMatch = commaVerse.match(/,(\d+)(?:-(\d+))?/);
+                    if (commaMatch) {
+                        const [, commaBVerse, commaEVerse] = commaMatch;
+                        const commaBVerseNum = parseInt(commaBVerse);
+                        
+                        if (commaEVerse) {
+                            const commaEVerseNum = parseInt(commaEVerse);
+                            if (commaBVerseNum > commaEVerseNum) {
+                                return { error: `잘못된 구절 범위: ${commaBVerseNum}-${commaEVerseNum}` };
+                            }
+                            
+                            for (let v = commaBVerseNum; v <= commaEVerseNum; v++) {
+                                if (bibleData[fullBook][chapter][v]) {
+                                    verses.push({
+                                        book: fullBook,
+                                        chapter: chapter,
+                                        verse: v,
+                                        text: bibleData[fullBook][chapter][v]
+                                    });
+                                }
+                            }
+                        } else {
+                            if (bibleData[fullBook][chapter][commaBVerseNum]) {
+                                verses.push({
+                                    book: fullBook,
+                                    chapter: chapter,
+                                    verse: commaBVerseNum,
+                                    text: bibleData[fullBook][chapter][commaBVerseNum]
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return { verses: verses };
+        }
+
+        // 책 이름 정규화 함수
+        function getFullBookName(bookInput) {
+            // 정확한 책 이름 또는 약어인 경우
+            if (bibleBooks[bookInput]) {
+                return bookInput;
+            }
+            
+            if (abbrToBook[bookInput]) {
+                return abbrToBook[bookInput];
+            }
+            
+            // 부분 일치 확인
+            for (const book in bibleBooks) {
+                if (book.startsWith(bookInput)) {
+                    return book;
+                }
+            }
+            
+            return null;
+        }
+
+        // 단어 검색 함수
+        function searchBibleWords(searchWord) {
+            const output = document.getElementById('output');
+            const results = [];
+            
+            // 모든 성경 구절 검색
+            for (const book in bibleData) {
+                for (const chapter in bibleData[book]) {
+                    for (const verse in bibleData[book][chapter]) {
+                        const text = bibleData[book][chapter][verse];
+                        if (text.includes(searchWord)) {
+                            results.push({
+                                book: book,
+                                chapter: parseInt(chapter),
+                                verse: parseInt(verse),
+                                text: text
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // 결과 표시
+            if (results.length === 0) {
+                output.innerHTML = `<p>검색어 '${searchWord}'에 대한 결과가 없습니다.</p>`;
+                return;
+            }
+            
+            const totalCount = results.length;
+            
+            let html = `<p>${totalCount}개의 구절에서 '${searchWord}' 단어가 등장합니다.</p>`;
+            
+            for (const result of results) {
+                // 검색어 하이라이트 처리
+                const highlightedText = result.text.replace(new RegExp(searchWord, 'g'), `<span class="highlight">${searchWord}</span>`);
+                
+                html += `<p><span class="bible-reference" data-book="${result.book}" data-chapter="${result.chapter}" data-verse="${result.verse}">${result.book} ${result.chapter}:${result.verse}</span> ${highlightedText}</p>`;
+            }
+            
+            output.innerHTML = html;
+            
+            // 레퍼런스 클릭 이벤트 추가
+            document.querySelectorAll('.bible-reference').forEach(ref => {
+                ref.addEventListener('click', function() {
+                    const book = this.dataset.book;
+                    const chapter = parseInt(this.dataset.chapter);
+                    const verse = parseInt(this.dataset.verse);
+                    
+                    clearChapterButtons();
+                    displayChapterButtons(book);
+                    currentBook = book;
+                    currentChapter = chapter;
+                    displayChapter(book, chapter, [verse]);
+                    saveHistory();
+                });
+            });
+        }
+
+        // 전체 성경 출력 함수
+        function displayAllBible() {
+            const output = document.getElementById('output');
+            let html = '<h2>한글킹제임스성경 전체</h2>';
+            
+            // 모든 책 목록 표시
+            for (const book in bookChapters) {
+                html += `<p><span class="bible-reference" data-book="${book}" data-chapter="1">${book}</span> (${bookChapters[book]}장)</p>`;
+            }
+            
+            output.innerHTML = html;
+            
+            // 클릭 이벤트 추가
+            document.querySelectorAll('.bible-reference').forEach(ref => {
+                ref.addEventListener('click', function() {
+                    const book = this.dataset.book;
+                    const chapter = parseInt(this.dataset.chapter);
+                    
+                    clearChapterButtons();
+                    displayChapterButtons(book);
+                    currentBook = book;
+                    currentChapter = chapter;
+                    displayChapter(book, chapter);
+                    saveHistory();
+                });
+            });
+        }
+
+        // 복사 기능
+        function copyOutputText() {
+            const output = document.getElementById('output');
+            
+            // 복사할 내용 생성 (레퍼런스 횟수 정보 제외)
+            let copyText = '';
+            const paragraphs = output.querySelectorAll('p');
+            
+            for (const p of paragraphs) {
+                // 검색 횟수 정보가 포함된 문단 건너뛰기
+                if (p.textContent.includes('개의 구절에서') && p.textContent.includes('단어가 등장합니다')) {
+                    continue;
+                }
+                
+                // HTML 태그 제거하고 텍스트만 추출
+                copyText += p.textContent + '\n';
+            }
+            
+            // 클립보드에 복사
+            navigator.clipboard.writeText(copyText.trim())
+                .then(() => {
+                    alert('텍스트가 복사되었습니다.');
+                })
+                .catch(err => {
+                    console.error('텍스트 복사 실패:', err);
+                    alert('텍스트 복사에 실패했습니다.');
+                });
+        }
+
+        // 히스토리 저장 함수
+        function saveHistory() {
+            // 현재 상태 저장
+            const currentState = {
+                book: currentBook,
+                chapter: currentChapter,
+                outputHTML: document.getElementById('output').innerHTML
+            };
+            
+            // 히스토리 인덱스가 중간인 경우, 이후 히스토리 제거
+            if (historyIndex !== -1 && historyIndex < searchHistory.length - 1) {
+                searchHistory = searchHistory.slice(0, historyIndex + 1);
+            }
+            
+            // 히스토리에 현재 상태 추가
+            searchHistory.push(currentState);
+            historyIndex = searchHistory.length - 1;
+        }
+
+        // 히스토리 뒤로가기 함수
+        function goBack() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const prevState = searchHistory[historyIndex];
+                
+                // 이전 상태 복원
+                currentBook = prevState.book;
+                currentChapter = prevState.chapter;
+                document.getElementById('output').innerHTML = prevState.outputHTML;
+                
+                // 장 버튼 복원
+                if (currentBook) {
+                    clearChapterButtons();
+                    displayChapterButtons(currentBook);
+                    highlightCurrentButtons();
+                }
+                
+                // 레퍼런스 클릭 이벤트 재설정
+                document.querySelectorAll('.bible-reference').forEach(ref => {
+                    ref.addEventListener('click', function() {
+                        if (this.dataset.book && this.dataset.chapter) {
+                            const book = this.dataset.book;
+                            const chapter = parseInt(this.dataset.chapter);
+                            const verse = this.dataset.verse ? parseInt(this.dataset.verse) : null;
+                            
+                            clearChapterButtons();
+                            displayChapterButtons(book);
+                            currentBook = book;
+                            currentChapter = chapter;
+                            displayChapter(book, chapter, verse ? [verse] : []);
+                            saveHistory();
+                        }
+                    });
+                });
+                
+                // 내비게이션 버튼 이벤트 재설정
+                const prevButton = document.querySelector('.prev-button');
+                const nextButton = document.querySelector('.next-button');
+                
+                if (prevButton && nextButton) {
+                    prevButton.addEventListener('click', function() {
+                        navigateChapter(-1);
+                    });
+                    
+                    nextButton.addEventListener('click', function() {
+                        navigateChapter(1);
+                    });
+                }
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
