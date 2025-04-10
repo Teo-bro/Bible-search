@@ -360,7 +360,7 @@
         // 성경 데이터 로드 함수
         async function loadBibleData() {
             try {
-                const response = await fetch('한글킹제임스성경 전문.txt');
+                const response = await fetch('kjv.txt');
                 if (!response.ok) {
                     throw new Error('성경 데이터를 불러오는데 실패했습니다.');
                 }
