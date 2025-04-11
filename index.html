@@ -360,17 +360,70 @@
         // 성경 데이터 로드 함수
         async function loadBibleData() {
             try {
-                const response = await fetch('kjv.txt');
-                if (!response.ok) {
-                    throw new Error('성경 데이터를 불러오는데 실패했습니다.');
+                console.log('성경 데이터 파일(kjv.txt) 로드 시도 중...');
+                
+                // 파일 로드 시도
+                try {
+                    const response = await fetch('kjv.txt');
+                    if (!response.ok) {
+                        throw new Error(`성경 데이터를 불러오는데 실패했습니다. 상태 코드: ${response.status}`);
+                    }
+                    
+                    const text = await response.text();
+                    console.log(`성경 파일 로드 성공: 파일 크기 ${text.length} 바이트`);
+                    
+                    // 파일 내용 샘플 출력 (디버깅용)
+                    const lines = text.split('\n');
+                    console.log('파일 내용 샘플 (처음 5줄):');
+                    for (let i = 0; i < Math.min(5, lines.length); i++) {
+                        console.log(`${i+1}: ${lines[i]}`);
+                    }
+                    
+                    // 데이터 파싱
+                    const parsedVerses = parseBibleData(text);
+                    console.log(`성경 데이터 파싱 완료: ${parsedVerses}개의 구절 로드됨`);
+                    
+                    if (parsedVerses > 0) {
+                        // 성공적으로 로드된 경우 첫 번째 책의 첫 장을 표시
+                        const books = Object.keys(bibleData);
+                        if (books.length > 0) {
+                            const firstBook = books[0];
+                            const chapters = Object.keys(bibleData[firstBook]);
+                            if (chapters.length > 0) {
+                                const firstChapter = parseInt(chapters[0]);
+                                currentBook = firstBook;
+                                currentChapter = firstChapter;
+                                clearChapterButtons();
+                                displayChapterButtons(firstBook);
+                                displayChapter(firstBook, firstChapter);
+                            }
+                        }
+                    } else {
+                        throw new Error('성경 데이터 파싱 결과가 없습니다.');
+                    }
+                } catch (error) {
+                    console.error('성경 파일 로드 오류:', error);
+                    
+                    // 파일 로드 실패 시 내장 데이터 사용
+                    console.log('내장 데이터로 전환합니다.');
+                    addSampleVerses();
+                    
+                    document.getElementById('output').innerHTML = `
+                        <p class="error">성경 데이터 파일을 불러오는데 실패했습니다: ${error.message}</p>
+                        <p>내장된 샘플 데이터를 사용합니다.</p>
+                        <p>검색창에 단어를 입력하고 검색 버튼을 누르면 그 단어가 포함된 모든 구절을 출력합니다.</p>
+                        <p>또는 성경 구절을 입력하세요. (예: '창세기 1:1', '창 1:1')</p>
+                        <p>또는 왼쪽의 성경 버튼을 클릭하여 성경을 읽을 수 있습니다.</p>
+                    `;
                 }
-
-                const text = await response.text();
-                parseBibleData(text);
-                console.log('성경 데이터가 성공적으로 로드되었습니다.');
             } catch (error) {
-                console.error('성경 데이터 로드 오류:', error);
-                document.getElementById('output').innerHTML = '<p class="error">성경 데이터를 불러오는데 실패했습니다.</p>';
+                console.error('성경 데이터 로드 최종 오류:', error);
+                document.getElementById('output').innerHTML = `
+                    <p class="error">성경 데이터를 불러오는데 문제가 발생했습니다: ${error.message}</p>
+                    <p>내장된 샘플 데이터를 사용합니다.</p>
+                `;
+                // 오류 발생 시 내장 데이터 사용
+                addSampleVerses();
             }
         }
 
