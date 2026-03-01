@@ -407,10 +407,29 @@
                     pEn = `<p data-verse-id="${uniqueId}">『${highlightedEn}』<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">(${enAbbr} ${chapter}:${verse})</span></p>`;
                     break;
                 // 💡 단어 검색 시 장절 연속 모드는 구절이 흩어져 있으므로 기본 약식 형태로 출력
-                case 'sequence':
-                    pKr = `<p data-verse-id="${uniqueId}"><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">${abbr} ${chapter}:${verse}</span> ${highlightedKr}</p>`;
-                    pEn = `<p data-verse-id="${uniqueId}"><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">${enAbbr} ${chapter}:${verse}</span> ${highlightedEn}</p>`;
+                case 'sequence': {
+                    let krSeq = "";
+                    let enSeq = "";
+                    // 검색된 구절들을 순서대로 정렬해서 하나씩 꺼냅니다 (vIdx는 순번)
+                    groupVerses.sort((a, b) => a.verse - b.verse).forEach((v, vIdx) => {
+                        const tKr = bibleData[book]?.[chapter]?.[v.verse] || "";
+                        const tEn = bibleDataEn[book]?.[chapter]?.[v.verse] || "";
+                        
+                        if (vIdx === 0) {
+                            // 첫 번째 구절일 때 (예: 요 3:3) -> 책 이름(abbr) 포함
+                            krSeq += `<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${v.verse}">${abbr} ${chapter}:${v.verse}</span> ${tKr}`;
+                            enSeq += `<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${v.verse}">${enAbbr} ${chapter}:${v.verse}</span> ${tEn}`;
+                        } else {
+                            // 두 번째 구절부터 (예: 3:4) -> 줄바꿈(<br>) 후 장:절만 표시
+                            krSeq += `<br><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${v.verse}">${chapter}:${v.verse}</span> ${tKr}`;
+                            enSeq += `<br><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${v.verse}">${chapter}:${v.verse}</span> ${tEn}`;
+                        }
+                    });
+                    // 완성된 덩어리를 문단(<p>) 하나로 묶습니다.
+                    pKr = `<p data-verse-id="${uniqueId}">${krSeq}</p>`;
+                    pEn = `<p data-verse-id="${uniqueId}">${enSeq}</p>`;
                     break;
+                 }
             }
             outputKr += pKr;
             outputEn += pEn;
@@ -637,6 +656,11 @@
                         pKr = `<p data-verse-id="${uniqueId}">『${textKr}』<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verse="${verseNum}" data-verses="${verseNum}">(${abbr} ${chapter}:${verseNum})</span></p>`;
                         pEn = `<p data-verse-id="${uniqueId}">『${textEn}』<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verse="${verseNum}" data-verses="${verseNum}">(${enAbbr} ${chapter}:${verseNum})</span></p>`;
                         break; 
+                        // 💡 단어 검색이나 흩어진 구절일 경우, 연속될 수 없으므로 약식 모드처럼 출력
+                    case 'sequence':
+                        pKr = `<p data-verse-id="${uniqueId}"><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">${abbr} ${chapter}:${verse}</span> ${textKr}</p>`;
+                        pEn = `<p data-verse-id="${uniqueId}"><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">${enAbbr} ${chapter}:${verse}</span> ${textEn}</p>`;
+                        break;
                 }
                 outputKr += pKr;
                 outputEn += pEn;
@@ -759,6 +783,7 @@
         document.getElementById('short-quote-format').addEventListener('click', () => changeDisplayMode('short-quote'));
         document.getElementById('double-quote-format').addEventListener('click', () => changeDisplayMode('double-quote'));
         document.getElementById('double-short-quote-format').addEventListener('click', () => changeDisplayMode('double-short-quote'));
+        document.getElementById('sequence-format').addEventListener('click', () => changeDisplayMode('sequence'));
     }
 
     function saveState() {
@@ -944,3 +969,4 @@
             });
 
     }
+
