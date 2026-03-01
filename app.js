@@ -406,6 +406,11 @@
                     pKr = `<p data-verse-id="${uniqueId}">『${highlightedKr}』<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">(${abbr} ${chapter}:${verse})</span></p>`;
                     pEn = `<p data-verse-id="${uniqueId}">『${highlightedEn}』<span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">(${enAbbr} ${chapter}:${verse})</span></p>`;
                     break;
+                // 💡 단어 검색 시 장절 연속 모드는 구절이 흩어져 있으므로 기본 약식 형태로 출력
+                case 'sequence':
+                    pKr = `<p data-verse-id="${uniqueId}"><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">${abbr} ${chapter}:${verse}</span> ${highlightedKr}</p>`;
+                    pEn = `<p data-verse-id="${uniqueId}"><span class="reference" data-book="${book}" data-chapter="${chapter}" data-verses="${verse}">${enAbbr} ${chapter}:${verse}</span> ${highlightedEn}</p>`;
+                    break;
             }
             outputKr += pKr;
             outputEn += pEn;
@@ -937,4 +942,5 @@
                 }
                 document.body.removeChild(tempTextArea);
             });
+
     }
